@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Test</title>
+  <script>
+    async function testAPI() {
+      const response = await fetch('http://localhost:3001/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: "test" })
+      });
+      console.log(await response.json());
+    }
+  </script>
+</head>
+<body>
+  <button onclick="testAPI()">Test API</button>
+</body>
+</html>

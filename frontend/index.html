@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astronomy Collaboration Library</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+<style>
+    :root {
+        --space-blue: #0b0e23;
+        --star-white: #f8f9fa;
+        --nebula-purple: #6e1c7c;
+        --galaxy-indigo: #8742f7;
+    }
+    
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: white;
+    }
+    
+    .search-hero {
+        background: linear-gradient(135deg, var(--space-blue) 0%, #1a1f4b 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .item-card {
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        background-color: white;
+    }
+    
+    .item-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .card-img-top {
+        height: 180px;
+        object-fit: cover;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+    
+    .category-filter {
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .ai-response {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        display: none;
+        border-left: 4px solid var(--nebula-purple);
+        color: #333; 
+    }
+    
+    .search-input {
+        border-radius: 50px;
+        padding: 12px 20px;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .search-btn {
+        border-radius: 50px;
+        padding: 12px 25px;
+        background-color: var(--nebula-purple);
+        border: none;
+    }
+    
+    .badge-custom {
+        background-color: var(--galaxy-indigo);
+        color: white;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .footer {
+        background-color: var(--space-blue);
+        color: white;
+        padding: 2rem 0;
+        margin-top: 3rem;
+    }
+    .modal-content {
+  border: 2px solid var(--nebula-purple);
+  border-radius: 10px;
+}
+
+#detail-image {
+  max-height: 70vh;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.modal-body {
+  background-color: var(--star-white);
+}
+    
+</style>
+</head>
+<body>
+    <div class="search-hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8 mx-auto text-center">
+                    <h1 class="mb-4"><i class="fas fa-star me-2"></i>Astronomy Collaboration Library</h1>
+                    <p class="lead mb-4">Discover groundbreaking astronomy projects, publications, and exhibitions from international collaborations</p>
+                    
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control search-input" id="ai-search" 
+                               placeholder="Ask about any astronomy collaboration item (e.g., 'Tell me about recent black hole research')" 
+                               aria-label="AI search">
+                        <button class="btn btn-primary search-btn" type="button" id="ask-button">
+                            <i class="fas fa-search me-2"></i>Ask AI
+                        </button>
+                    </div>
+                    <div id="ai-response" class="ai-response"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="category-filter">
+            <div class="d-flex flex-wrap justify-content-center">
+                <button type="button" class="btn btn-outline-primary rounded-pill mx-2 my-1 active" data-category="all">
+                    <i class="fas fa-globe me-2"></i>All Items
+                </button>
+                <button type="button" class="btn btn-outline-primary rounded-pill mx-2 my-1" data-category="collaboration">
+                    <i class="fas fa-images me-2"></i>Collaborations
+                </button>
+                <button type="button" class="btn btn-outline-primary rounded-pill mx-2 my-1" data-category="exhibition">
+                    <i class="fas fa-images me-2"></i>Exhibitions
+                </button>
+                <button type="button" class="btn btn-outline-primary rounded-pill mx-2 my-1" data-category="event">
+                    <i class="fas fa-images me-2"></i>Events
+                </button>
+                <button type="button" class="btn btn-outline-primary rounded-pill mx-2 my-1" data-category="artwork">
+                    <i class="fas fa-book me-2"></i>Artworks
+                </button>
+                <button type="button" class="btn btn-outline-primary rounded-pill mx-2 my-1" data-category="astronomyproject">
+                    <i class="fas fa-database me-2"></i>Astronomy Projects
+                </button>
+                <button type="button" class="btn btn-outline-primary rounded-pill mx-2 my-1" data-category="project">
+                    <i class="fas fa-flask me-2"></i>Research Projects
+                </button>
+                <button type="button" class="btn btn-outline-primary rounded-pill mx-2 my-1" data-category="organization">
+                    <i class="fas fa-tools me-2"></i>Organizations
+                </button>
+                <button type="button" class="btn btn-outline-primary rounded-pill mx-2 my-1" data-category="founding">
+                    <i class="fas fa-database me-2"></i>Founding Opportunities
+                </button>
+            </div>
+        </div>
+
+        <div class="row" id="items-container">
+            
+        </div>
+        
+        <div class="text-center my-4">
+            <button class="btn btn-outline-secondary" id="load-more">Load More</button>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Astronomy Collaboration Library</h5>
+                    <p>A showcase of international astronomy collaborations and their contributions to science.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white">About</a></li>
+                        <li><a href="#" class="text-white">Contribute</a></li>
+                        <li><a href="#" class="text-white">API</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Connect</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white"><i class="fab fa-twitter me-2"></i>Twitter</a></li>
+                        <li><a href="#" class="text-white"><i class="fab fa-github me-2"></i>GitHub</a></li>
+                        <li><a href="#" class="text-white"><i class="fas fa-envelope me-2"></i>Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="bg-light">
+            <div class="text-center">
+                <p class="mb-0">© 2025 Astronomy Collaboration Library. All content is for educational and research purposes.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+    <!-- 详情弹窗 -->
+<div id="detail-modal" class="modal fade" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-space-blue text-white">
+          <h5 id="detail-title" class="modal-title"></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <img id="detail-image" src="" class="img-fluid rounded" alt="Project Image">
+            </div>
+            <div class="col-md-6">
+              <p><strong>Year:</strong> <span id="detail-year"></span></p>
+              <p><strong>Contributors:</strong> <span id="detail-contributors"></span></p>
+              <p><strong>Description:</strong></p>
+              <p id="detail-description" class="mb-3"></p>
+              <div id="detail-keywords" class="mb-3"></div>
+              <a id="detail-link" href="#" class="btn btn-galaxy-indigo" target="_blank">
+                <i class="fas fa-external-link-alt me-2"></i>Official Website
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- 上传按钮（放在导航或页脚附近） -->
+<button id="upload-btn" class="btn btn-nebula-purple fixed-bottom-right">
+    <i class="fas fa-plus me-2"></i>Submit Project
+</button>
+
+<!-- 上传模态框 -->
+<div id="upload-modal" class="modal fade">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-space-blue text-white">
+                <h5 class="modal-title">Submit New Astronomy Project</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="project-form" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label class="form-label">Project Title*</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Year*</label>
+                            <input type="number" class="form-control" name="year" min="2000" max="2099" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Category*</label>
+                            <select class="form-select" name="category" required>
+                                <option value="exhibition">Exhibition</option>
+                                <option value="research">Research</option>
+                                <option value="artwork">Artwork</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Contributors (comma separated)*</label>
+                        <input type="text" class="form-control" name="contributors" placeholder="e.g. Alice, Bob" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description*</label>
+                        <textarea class="form-control" name="description" rows="3" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Keywords (comma separated)</label>
+                        <input type="text" class="form-control" name="keywords">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Project Image*</label>
+                        <input type="file" class="form-control" name="image" accept="image/*" required>
+                        <div class="form-text">Max 5MB, JPG/PNG format</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">External Link</label>
+                        <input type="url" class="form-control" name="link" placeholder="https://">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Submit
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* 上传按钮定位 */
+    .fixed-bottom-right {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 1000;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .btn-nebula-purple {
+        background-color: var(--nebula-purple);
+        border-color: var(--nebula-purple);
+        color: white;
+    }
+</style>
+</body>
+</html>
