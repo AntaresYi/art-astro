@@ -1,10 +1,15 @@
-// Sample data - in production this would come from an API
-console.log("Script loaded!"); // 确认脚本已加载
+
+console.log("Script loaded!"); 
 
 document.getElementById('ask-button').addEventListener('click', function() {
-  console.log("Button clicked!"); // 确认点击事件触发
+  console.log("Button clicked!"); 
   askAI();
 });
+
+
+const BACKEND_API_BASE_URL = 'https://art-astro-qvm2.onrender.com';
+
+
 const astronomyItems = [
     {
         id: 1,
@@ -372,26 +377,24 @@ const astronomyItems = [
 
 ];
 
-// 配置Ollama API端点（通过本地代理）
-const OLLAMA_API_URL = "http://localhost:3001/api/ask";
 
-// 修改ask-button事件监听器
+
 document.getElementById('ask-button').addEventListener('click', askAI);
 
-// 添加搜索框回车键支持
+
 document.getElementById('ai-search').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
         askAI();
     }
 });
-// 上传功能初始化
+
 function initUpload() {
-    // 打开模态框
+  
     document.getElementById('upload-btn').addEventListener('click', () => {
         new bootstrap.Modal(document.getElementById('upload-modal')).show();
     });
 
-    // 表单提交处理
+    
     document.getElementById('project-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -400,29 +403,30 @@ function initUpload() {
         const originalText = submitBtn.innerHTML;
         
         try {
-            // 显示加载状态
+
             submitBtn.disabled = true;
             submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>Uploading...`;
             
-            // 构造FormData
+
             const formData = new FormData(form);
             formData.append('keywords', formData.get('keywords').split(',').map(k => k.trim()));
             formData.append('contributors', formData.get('contributors').split(',').map(c => c.trim()));
             
-            // 发送到后端
-            const response = await fetch('/api/projects', {
+
+            const response = await fetch(`${BACKEND_API_BASE_URL}/api/projects`, {
                 method: 'POST',
                 body: formData
             });
+
             
             if (!response.ok) throw new Error(await response.text());
             
-            // 成功处理
+
             const newProject = await response.json();
-            astronomyItems.unshift(newProject); // 添加到数组开头
-            renderItems(astronomyItems); // 重新渲染
+            astronomyItems.unshift(newProject);
+            renderItems(astronomyItems);
             
-            // 重置表单
+       
             form.reset();
             bootstrap.Modal.getInstance(document.getElementById('upload-modal')).hide();
             
@@ -440,6 +444,7 @@ function initUpload() {
 document.addEventListener('DOMContentLoaded', function() {
     renderItems(astronomyItems);
     setupEventListeners();
+    initUpload(); 
 });
 
 // Render items to the page
@@ -463,7 +468,7 @@ function renderItems(items) {
               ${item.keywords.map(keyword => `<span class="badge badge-custom">${keyword}</span>`).join('')}
             </div>
             <button class="btn btn-outline-primary view-detail" 
-                    data-item='${JSON.stringify(item).replace(/'/g, "\\'")}'>
+                     data-item='${JSON.stringify(item).replace(/'/g, "\\'")}'>
               <i class="fas fa-expand me-2"></i>View Detail
             </button>
           </div>
@@ -478,22 +483,22 @@ document.addEventListener('click', function(e) {
     const btn = e.target.closest('.view-detail');
     if (!btn) return;
 
-    // 调试：打印原始数据
+
     console.log("Raw data-item:", btn.dataset.item);
 
     try {
-        // 安全解析（处理截断数据）
+    
         let itemData = btn.dataset.item;
         
-        // 修复1：检查是否被截断
+    
         if (!itemData.endsWith('}')) {
             itemData = itemData.substring(0, itemData.lastIndexOf('}') + 1);
         }
         
-        // 修复2：处理转义字符
+     
         itemData = itemData
-            .replace(/\\"/g, '"')  // 转换 \" 为 "
-            .replace(/\\'/g, "'"); // 转换 \' 为 '
+            .replace(/\\"/g, '"')    
+            .replace(/\\'/g, "'"); 
         
         const item = JSON.parse(itemData);
         showDetailModal(item);
@@ -504,7 +509,7 @@ document.addEventListener('click', function(e) {
     }
 });
   
-  // 显示详情弹窗函数
+
   function showDetailModal(item) {
     document.getElementById('detail-title').textContent = item.title;
     document.getElementById('detail-image').src = item.image;
@@ -513,13 +518,13 @@ document.addEventListener('click', function(e) {
     document.getElementById('detail-description').textContent = item.description;
     document.getElementById('detail-link').href = item.link;
     
-    // 渲染关键词
+ 
     const keywordsContainer = document.getElementById('detail-keywords');
     keywordsContainer.innerHTML = item.keywords.map(k => 
       `<span class="badge badge-custom me-2 mb-2">${k}</span>`
     ).join('');
     
-    // 显示弹窗
+
     const modal = new bootstrap.Modal(document.getElementById('detail-modal'));
     modal.show();
   }
@@ -557,15 +562,15 @@ function setupEventListeners() {
         }
     });
 }
-// 使用DOMContentLoaded + 事件委托（双保险）
+
 document.addEventListener('DOMContentLoaded', function() {
-    // 方法1：直接绑定
+ 
     const btn = document.getElementById('upload-btn');
     if (btn) {
         btn.addEventListener('click', handleUploadClick);
     }
 
-    // 方法2：事件委托（防止动态内容问题）
+
     document.body.addEventListener('click', function(e) {
         if (e.target.closest('#upload-btn')) {
             handleUploadClick();
@@ -583,12 +588,12 @@ function handleUploadClick() {
         modal.show();
     } catch (err) {
         console.error('模态框初始化失败:', err);
-        // 后备方案：手动显示
+
         document.getElementById('upload-modal').classList.add('show');
         document.getElementById('upload-modal').style.display = 'block';
     }
 }
-// AI问答功能
+
 async function askAI() {
     const questionInput = document.getElementById('ai-search');
     const question = questionInput.value.trim();
@@ -599,7 +604,7 @@ async function askAI() {
         return;
     }
     
-    // 显示加载状态
+
     responseElement.style.display = 'block';
     responseElement.innerHTML = `
         <div class="d-flex align-items-center">
@@ -611,33 +616,30 @@ async function askAI() {
     `;
     
     try {
-        // 构建优化的prompt
+        
         const prompt = buildPrompt(question);
         
-        // 调用Ollama API
-        const response = await fetch('http://localhost:11434/api/generate', {
+       
+        const response = await fetch(`${BACKEND_API_BASE_URL}/api/ask`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                model: "llama3", // 或其他你下载的模型
-                prompt: prompt,
-                stream: false,
-                options: {
-                    temperature: 0.7,
-                    top_p: 0.9
-                }
+  
+                prompt: prompt 
+  
             })
         });
+ 
         
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
         }
         
         const data = await response.json();
         
-        // 显示回答
+  
         responseElement.innerHTML = `
             <div class="mb-2">
                 <strong><i class="fas fa-question-circle me-2"></i>Your Question:</strong>
@@ -645,7 +647,7 @@ async function askAI() {
             </div>
             <div>
                 <strong><i class="fas fa-robot me-2"></i>AI Response:</strong>
-                <p class="ms-4">${formatResponse(data.response)}</p>
+                <p class="ms-4">${formatResponse(data.answer)}</p>
             </div>
         `;
         
@@ -660,20 +662,22 @@ async function askAI() {
     }
 }
 
+
 function getProjectExamples(count) {
     if (!astronomyItems?.length) return "";
     return astronomyItems
-        .sort((a, b) => b.year - a.year)
+        .sort((a, b) => (b.year || "").toString().localeCompare((a.year || "").toString())) // 确保年份可比较
         .slice(0, count)
-        .map(item => `- "${item.title}" (${item.year})`)
+        .map(item => `- "${item.title}" (${item.year}): ${item.description.substring(0, 80)}...`)
         .join('\n');
 }
 
-// 辅助函数 - 获取所有分类
+
 function getUniqueCategories() {
     return [...new Set(astronomyItems.map(item => item.category))];
 }
-// 构建优化的prompt
+
+
 function buildPrompt(question) {
     return `[INST]
 <<SYS>>
@@ -698,18 +702,13 @@ Question: ${question}
 [/INST]`;
 }
 
-// Helper function to get example projects
-function getProjectExamples(count) {
-    return astronomyItems.slice(0, count).map(item => 
-        `- ${item.title} (${item.year}): ${item.description.substring(0, 80)}...`
-    ).join('\n');
-}
 
-// 格式化响应文本
+
 function formatResponse(text) {
-    // 先去除 Llama 3 的对话标记
-    text = text.replace(/\[INST\].*?\[\/INST\]/g, '');
-    // 简单的Markdown格式转换
+
+    text = text.replace(/\[INST\]/g, '').replace(/\[\/INST\]/g, '');
+    text = text.replace(/<<SYS>>/g, '').replace(/<\/?SYS>>/g, ''); 
+
     return text
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // 加粗
         .replace(/\*(.*?)\*/g, '<em>$1</em>') // 斜体
