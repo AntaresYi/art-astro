@@ -131,5 +131,3 @@ if (!fs.existsSync('public/uploads')) {
     fs.mkdirSync('public/uploads', { recursive: true });
 }
 
-
-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
