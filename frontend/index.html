@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Astronomy Collaboration Library</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Art & Astronomy Collaborations Library</title> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
 <style>
@@ -113,6 +112,56 @@
   background-color: var(--star-white);
 }
     
+    
+    .fixed-bottom-right {
+        position: fixed;
+        right: 20px;
+        bottom: 20px;
+        z-index: 1000;
+        border-radius: 50%;
+        width: 70px; 
+        height: 70px; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        font-size: 1.5rem; 
+    }
+    .fixed-bottom-left {
+        position: fixed;
+        left: 20px; 
+        bottom: 20px;
+        z-index: 1000; 
+        border-radius: 50%; 
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+    }
+    .btn-nebula-purple {
+        background-color: var(--nebula-purple);
+        border-color: var(--nebula-purple);
+        color: white;
+    }
+   
+    .fixed-bottom-right i {
+        margin-right: 0; 
+    }
+    .fixed-bottom-right span {
+        display: none; 
+    }
+   
+    .fixed-bottom-right:hover span {
+        display: inline;
+        margin-left: 5px;
+    }
+    .fixed-bottom-right:hover {
+        width: auto; 
+        border-radius: 30px;
+        padding: 15px 25px; 
+    }
 </style>
 </head>
 <body>
@@ -120,15 +169,14 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8 mx-auto text-center">
-                    <h1 class="mb-4"><i class="fas fa-star me-2"></i>Astronomy Collaboration Library</h1>
-                    <p class="lead mb-4">Discover groundbreaking astronomy projects, publications, and exhibitions from international collaborations</p>
+                    <h1 class="mb-4"><i class="fas fa-star me-2"></i>Art & Astronomy Collaborations Library</h1> <p class="lead mb-4">Discover groundbreaking astronomy projects, publications, and exhibitions from international collaborations</p>
                     
                     <div class="input-group mb-3">
                         <input type="text" class="form-control search-input" id="ai-search" 
                                placeholder="Ask about any astronomy collaboration item (e.g., 'Tell me about recent black hole research')" 
                                aria-label="AI search">
                         <button class="btn btn-primary search-btn" type="button" id="ask-button">
-                            <i class="fas fa-search me-2"></i>Ask AI
+                            <i class="fas fa-search me-2"></i>Ask Art-Astro AI
                         </button>
                     </div>
                     <div id="ai-response" class="ai-response"></div>
@@ -165,8 +213,7 @@
                     <i class="fas fa-tools me-2"></i>Organizations
                 </button>
                 <button type="button" class="btn btn-outline-primary rounded-pill mx-2 my-1" data-category="founding">
-                    <i class="fas fa-database me-2"></i>Founding Opportunities
-                </button>
+                    <i class="fas fa-database me-2"></i>Funding Opportunity </button>
             </div>
         </div>
 
@@ -183,8 +230,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
-                    <h5>Astronomy Collaboration Library</h5>
-                    <p>A showcase of international astronomy collaborations and their contributions to science.</p>
+                    <h5>Art & Astronomy Collaborations Library</h5> <p>A showcase of international astronomy collaborations and their contributions to science.</p>
                 </div>
                 <div class="col-md-3">
                     <h5>Quick Links</h5>
@@ -205,15 +251,13 @@
             </div>
             <hr class="bg-light">
             <div class="text-center">
-                <p class="mb-0">© 2025 Astronomy Collaboration Library. All content is for educational and research purposes.</p>
-            </div>
+                <p class="mb-0">© 2025 Art & Astronomy Collaborations Library. All content is for educational and research purposes.</p> </div>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="app.js"></script>
-    <!-- 详情弹窗 -->
-<div id="detail-modal" class="modal fade" tabindex="-1" aria-hidden="true">
+    <div id="detail-modal" class="modal fade" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header bg-space-blue text-white">
@@ -228,7 +272,7 @@
             <div class="col-md-6">
               <p><strong>Year:</strong> <span id="detail-year"></span></p>
               <p><strong>Contributors:</strong> <span id="detail-contributors"></span></p>
-              <p><strong>Description:</strong></p>
+              <p id="detail-uploader-info" class="text-muted mb-2" style="display: none;"></p> <p><strong>Description:</strong></p>
               <p id="detail-description" class="mb-3"></p>
               <div id="detail-keywords" class="mb-3"></div>
               <a id="detail-link" href="#" class="btn btn-galaxy-indigo" target="_blank">
@@ -240,12 +284,9 @@
       </div>
     </div>
   </div>
-<!-- 上传按钮（放在导航或页脚附近） -->
 <button id="upload-btn" class="btn btn-nebula-purple fixed-bottom-right">
-    <i class="fas fa-plus me-2"></i>Submit Project
-</button>
+    <i class="fas fa-plus me-2"></i><span>Submit Project</span> </button>
 
-<!-- 上传模态框 -->
 <div id="upload-modal" class="modal fade">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -271,7 +312,12 @@
                                 <option value="exhibition">Exhibition</option>
                                 <option value="research">Research</option>
                                 <option value="artwork">Artwork</option>
-                            </select>
+                                <option value="collaboration">Collaboration</option>
+                                <option value="event">Event</option>
+                                <option value="astronomyproject">Astronomy Project</option>
+                                <option value="project">Research Project</option>
+                                <option value="organization">Organization</option>
+                                <option value="founding">Funding Opportunity</option> </select>
                         </div>
                     </div>
 
@@ -301,6 +347,16 @@
                         <input type="url" class="form-control" name="link" placeholder="https://">
                     </div>
 
+                    <div class="mb-3">
+                        <label for="contactEmail" class="form-label">Your Email (for status updates)*</label>
+                        <input type="email" class="form-control" id="contactEmail" name="contactEmail" required>
+                        <div class="form-text">We will use this email to notify you about your submission status.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="uploaderName" class="form-label">Your Name/Alias (displayed with project)*</label>
+                        <input type="text" class="form-control" id="uploaderName" name="uploaderName" required>
+                        <div class="form-text">This name will be displayed publicly with your project.</div>
+                    </div>
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-upload me-2"></i>Submit
                     </button>
@@ -309,27 +365,10 @@
         </div>
     </div>
 </div>
+<a href="admin.html" class="btn btn-secondary fixed-bottom-left" title="Admin Login">
+    <i class="fas fa-user-cog"></i> </a>
 
-<style>
-    /* 上传按钮定位 */
-    .fixed-bottom-right {
-        position: fixed;
-        right: 20px;
-        bottom: 20px;
-        z-index: 1000;
-        border-radius: 50%;
-        width: 60px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-    .btn-nebula-purple {
-        background-color: var(--nebula-purple);
-        border-color: var(--nebula-purple);
-        color: white;
-    }
-</style>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

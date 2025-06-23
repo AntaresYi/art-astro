@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Astronomy Collaborations</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --space-blue: #0b0e23;
+            --star-white: #f8f9fa;
+            --nebula-purple: #6e1c7c;
+            --galaxy-indigo: #8742f7;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--star-white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar {
+            background-color: var(--space-blue);
+        }
+        .navbar-brand, .nav-link {
+            color: var(--star-white) !important;
+        }
+        .navbar-brand:hover, .nav-link:hover {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+        .login-container, .admin-panel {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 0;
+        }
+        .login-card {
+            max-width: 400px;
+            width: 100%;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+        .project-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .card-header {
+            background-color: var(--nebula-purple);
+            color: white;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            padding: 0.75rem 1.25rem;
+        }
+        .card-body {
+            padding: 1.25rem;
+        }
+        .card-img-top {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #eee;
+        }
+        .footer {
+            background-color: var(--space-blue);
+            color: white;
+            padding: 1rem 0;
+            margin-top: auto; 
+        }
+        .btn-nebula-purple {
+            background-color: var(--nebula-purple);
+            border-color: var(--nebula-purple);
+            color: white;
+        }
+        .btn-nebula-purple:hover {
+            background-color: #5a1766; 
+            border-color: #5a1766;
+            color: white;
+        }
+        .btn-galaxy-indigo {
+            background-color: var(--galaxy-indigo);
+            border-color: var(--galaxy-indigo);
+            color: white;
+        }
+        .btn-galaxy-indigo:hover {
+            background-color: #7b37e7; 
+            border-color: #7b37e7;
+            color: white;
+        }
+        .alert-container {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1050;
+            width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-star me-2"></i>Art & Astronomy Library
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="admin-logout" style="display: none;">Logout (<span id="logged-in-user"></span>)</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="alert-container" id="alert-messages"></div>
+
+    <section id="loginSection" class="container mt-5" style="max-width: 500px;">
+    <div class="login-card"> <h4 class="text-center mb-4"><i class="fas fa-user-lock me-2"></i>Admin Login</h4>
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="usernameInput" class="form-label">Username</label>
+                <input type="text" class="form-control" id="usernameInput" required>
+                </div>
+            <div class="mb-3">
+                <label for="passwordInput" class="form-label">Password</label>
+                <input type="password" class="form-control" id="passwordInput" required>
+                </div>
+            <div id="loginMessage" class="alert mt-3" style="display:none;"></div>
+            <button type="submit" class="btn btn-nebula-purple w-100"><i class="fas fa-sign-in-alt me-2"></i>Login</button>
+        </form>
+    </div>
+</section>
+<section id="loggedInSection" class="container-fluid py-4" style="display: none;">
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">Admin Panel</a>
+            <span class="navbar-text ms-auto me-3">
+                Logged in as: <strong id="adminUsername"></strong>
+            </span>
+            <button class="btn btn-outline-light" id="logoutBtn">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h3 class="mb-4">Project Management</h3>
+
+        <div class="card mb-4">
+            <div class="card-header">Pending Projects</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Year</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Contact Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingProjectsTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">All Projects</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Year</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Contact Email</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allProjectsTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <div class="admin-panel container mt-4" id="admin-section" style="display: none;">
+        <h2 class="mb-4 text-center">Pending Project Submissions</h2>
+        <div id="pending-projects-container" class="row">
+            <div class="col-12 text-center py-5" id="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading pending projects...</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container text-center">
+            <p class="mb-0">© 2025 Art & Astronomy Collaborations Library. Admin Panel.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const BACKEND_API_BASE_URL = 'https://art-astro-qvm2.onrender.com'; 
+
+   
+        document.addEventListener('DOMContentLoaded', () => {
+            checkLoginStatus(); 
+ 
+            document.getElementById('loginForm').addEventListener('submit', handleLogin); 
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout); 
+        });
+
+
+        function checkLoginStatus() {
+            const token = localStorage.getItem('adminToken');
+            const username = localStorage.getItem('adminUsername');
+            const loginSection = document.getElementById('loginSection'); 
+            const loggedInSection = document.getElementById('loggedInSection'); 
+
+            if (token && username) {
+                
+                loginSection.style.display = 'none';
+                loggedInSection.style.display = 'block';
+                document.getElementById('adminUsername').textContent = username;
+                fetchAndRenderProjects(); 
+            } else {
+               
+                loginSection.style.display = 'block';
+                loggedInSection.style.display = 'none';
+            }
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault(); 
+
+            const username = document.getElementById('usernameInput').value;
+            const password = document.getElementById('passwordInput').value;
+            const loginMessage = document.getElementById('loginMessage'); 
+
+            loginMessage.textContent = ''; 
+
+            let data;
+
+            try {
+                const response = await fetch(`${BACKEND_API_BASE_URL}/admin/login`, { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                try {
+                data = await response.json();
+                } catch (jsonParseError) {
+                console.error('Failed to parse JSON response from login:', jsonParseError);
+                data = { message: 'Failed to parse JSON response from login' };
+                }
+
+
+                if (response.ok) {
+                    localStorage.setItem('adminToken', data.token);
+                    console.log('Token saved to localStorage:', localStorage.getItem('adminToken'));
+                    localStorage.setItem('adminUsername', username);
+                    showAlert('Login successful!', 'success');
+                    checkLoginStatus(); 
+                } else {
+                    showAlert(data.message || 'Login failed. Please check your credentials.', 'danger');
+                }
+            } catch (error) {
+                console.error('Login request failed:', error);
+                showAlert('Login request failed: Server error or network issue.', 'danger');
+            }
+
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUsername');
+            showAlert('Logged out successfully.', 'info');
+            checkLoginStatus();
+        }
+
+
+
+        async function fetchAndRenderProjects() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                checkLoginStatus(); 
+                return;
+            }
+
+            try {
+
+                const response = await fetch(`${BACKEND_API_BASE_URL}/api/admin/projects`, { // **这里是修正：获取所有项目URL**
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        showAlert('Session expired or unauthorized. Please log in again.', 'warning');
+                        handleLogout();
+                        return;
+                    }
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const projects = await response.json();
+                renderProjectsTables(projects); // 渲染项目到两个表格
+            } catch (error) {
+                console.error('Error fetching projects:', error);
+                showAlert('Error fetching projects. Server error.', 'danger');
+            }
+        }
+
+        function renderProjectsTables(projects) {
+            const pendingTableBody = document.getElementById('pendingProjectsTableBody');
+            const allTableBody = document.getElementById('allProjectsTableBody');
+
+            pendingTableBody.innerHTML = ''; // 清空现有内容
+            allTableBody.innerHTML = '';
+
+            if (projects.length === 0) {
+                pendingTableBody.innerHTML = '<tr><td colspan="6" class="text-center">No pending projects.</td></tr>';
+                allTableBody.innerHTML = '<tr><td colspan="6" class="text-center">No projects found.</td></tr>';
+                return;
+            }
+
+
+            const pendingProjects = projects.filter(p => p.isApproved === false);
+
+
+
+            if (pendingProjects.length === 0) {
+                pendingTableBody.innerHTML = '<tr><td colspan="6" class="text-center">No pending projects.</td></tr>';
+            } else {
+                pendingProjects.forEach(project => renderProjectRow(project, pendingTableBody, true));
+            }
+
+
+            projects.forEach(project => renderProjectRow(project, allTableBody, false));
+        }
+
+        function renderProjectRow(project, tableBody, isPendingTable) {
+            const row = tableBody.insertRow();
+            let statusText = '';
+            let statusClass = '';
+
+            if (project.isApproved === true) {
+                statusText = 'Approved';
+                statusClass = 'text-success';
+            } else if (project.isApproved === false) {
+                statusText = 'Rejected';
+                statusClass = 'text-danger';
+            } else {
+                statusText = 'Pending';
+                statusClass = 'text-warning';
+            }
+
+            row.innerHTML = `
+                <td>${project.title}</td>
+                <td>${project.year}</td>
+                <td>${project.category}</td>
+                <td><span class="${statusClass}">${statusText}</span></td>
+                <td>${project.contactEmail || 'N/A'}</td>
+                <td class="action-btns">
+                    ${isPendingTable || (project.isApproved === false) ? `<button class="btn btn-success btn-sm me-1" onclick="handleProjectAction('${project._id}', 'approve')"><i class="fas fa-check"></i> Approve</button>` : ''}
+                    ${isPendingTable || (project.isApproved === true) ? `<button class="btn btn-warning btn-sm me-1" onclick="handleProjectAction('${project._id}', 'reject')"><i class="fas fa-times"></i> Reject</button>` : ''}
+                    <button class="btn btn-danger btn-sm" onclick="handleProjectAction('${project._id}', 'delete')"><i class="fas fa-trash-alt"></i> Delete</button>
+                </td>
+            `;
+        }
+
+        // =================================== 项目操作 (批准/拒绝/删除) ===================================
+
+        async function handleProjectAction(projectId, action) {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                showAlert('Not logged in. Please log in again.', 'danger');
+                checkLoginStatus();
+                return;
+            }
+
+            let url = '';
+            let method = '';
+            let confirmMessage = '';
+
+            if (action === 'approve') {
+                url = `${BACKEND_API_BASE_URL}/api/admin/projects/${projectId}/approve`;
+                method = 'PUT';
+                confirmMessage = 'Are you sure you want to approve this project?';
+            } else if (action === 'reject') {
+                url = `${BACKEND_API_BASE_URL}/api/admin/projects/${projectId}/reject`; // **这里是修正：拒绝URL**
+                method = 'PUT'; // **这里是修正：拒绝方法**
+                confirmMessage = 'Are you sure you want to reject this project?';
+            } else if (action === 'delete') {
+                url = `${BACKEND_API_BASE_URL}/api/admin/projects/${projectId}`;
+                method = 'DELETE';
+                confirmMessage = 'Are you sure you want to delete this project? This cannot be undone.';
+            } else {
+                showAlert('Invalid action.', 'danger');
+                return;
+            }
+
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert(`Project ${action}d successfully!`, 'success');
+                    fetchAndRenderProjects(); // 刷新项目列表
+                } else {
+                    showAlert(data.message || `Failed to ${action} project.`, 'danger');
+                    if (response.status === 401 || response.status === 403) {
+                        showAlert('Session expired or unauthorized. Please log in again.', 'warning');
+                        handleLogout(); // 强制重新登录
+                    }
+                }
+            } catch (error) {
+                console.error(`Error ${action}ing project:`, error);
+                showAlert(`Error ${action}ing project. Server error.`, 'danger');
+            }
+        }
+
+        // =================================== 辅助函数 ===================================
+
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('loginMessage'); // 复用登录消息框作为通用警报
+            alertDiv.className = `alert alert-${type} mt-3`;
+            alertDiv.textContent = message;
+            alertDiv.style.display = 'block';
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

@@ -1,386 +1,23 @@
+// app.js
 
-console.log("Script loaded!"); 
+console.log("Script loaded!");
 
-document.getElementById('ask-button').addEventListener('click', function() {
-  console.log("Button clicked!"); 
-  askAI();
+// IMPORTANT: Update this URL for your deployed backend
+// For local development, it might be 'http://localhost:3001'
+// For Render deployment, it will be your Render backend service URL
+const BACKEND_API_BASE_URL = 'https://art-astro-qvm2.onrender.com'; // 【MODIFICATION】Update this with your actual Render backend URL
+
+// Global variable to store all fetched approved projects (still useful for display logic)
+let allApprovedProjects = [];
+
+// --- Event Listeners and Initial Setup ---
+document.addEventListener('DOMContentLoaded', function() {
+    fetchApprovedProjects(); // Fetch projects from backend on load
+    setupEventListeners();
+    initUpload();
 });
 
-
-const BACKEND_API_BASE_URL = 'https://art-astro-qvm2.onrender.com';
-
-
-const astronomyItems = [
-    {
-        id: 1,
-        title: "Creativity and Curiosity: A Collaboration between Artists and Astronomers",
-        category: "collaboration",
-        description: "Creativity and Curiosity is an art-science project co-founded and led by UK-based contemporary artists Ione Parkin and Gillian McFarland.",
-        year: "since 2017",
-        contributors: ["An Lanntair", "Gillian McFarland", "Ione Parkin", "Graeme Hawes", "Kate Bernstein"],
-        link: "https://www.creativityandcuriosity.com/",
-        keywords: ["art-science", "collaboration", "Britain"],
-        image: "images/creativity.jpg"
-    },
-    {
-        id: 2,
-        title: "Astrophotography and the art of collaboration",
-        category: "publication",
-        description: "One young photographer's journey shows how teamwork is expanding the bounds of astroimaging.",
-        year: 2024,
-        contributors: ["Astronomy(magazine)", "William Ostling"],
-        link: "https://www.astronomy.com/observing/astrophotography-and-the-art-of-collaboration/",
-        keywords: ["astrophotography", "collaboration", "USA"],
-        image: "images/astrophotography.jpg"
-    },
-    {
-        id: 3,
-        title: "Dark Distortions",
-        category: "exhibition",
-        description: "A glittering visualization of dark matter, inspired by Euclid, a forthcoming ESA mission to study the mysterious nature of dark matter.",
-        year: 2020,
-        contributors: ["ESA/Leiden University", "Thijs Biersteker", "Henk Hoekstra"],
-        link: "https://www.ecsite.eu/activities-and-services/events/how-can-artists-and-astronomers-collaborate-communicate-mysteries",
-        keywords: ["dark matter", "Euclid mission", "Netherlands"],
-        image: "images/Darkdistortions.jpg"
-    },
-    {
-        id: 4,
-        title: "The Astronomical Imagination",
-        category: "collaboration",
-        description: "Examines what happens when we bring artistic methods into relation with the scientific method.",
-        year: "since 2021",
-        contributors: ["Laboratory for Artistic Intelligence", "Helen Yung", "Samita Sinha", "Miguel Flores Jr.", "Gurtina Besla"],
-        link: "https://artisticintelligence.com/artistic-research/astronomical-imagination/",
-        keywords: ["artistic research", "scientific method", "Canada"],
-        image: "images/astronomicalimagination.jpg"
-    },
-    {
-        id: 5,
-        title: "Art of Artemis",
-        category: "collaboration",
-        description: "To celebrate the first Artemis mission and highlight the Moon's importance in human history, ESA teamed up with art and digital design schools to showcase new artists and their vision of lunar exploration.",
-        year: 2022,
-        contributors: ["ESA"],
-        link: "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Orion/Art_for_Artemis",
-        keywords: ["Artemis", "Moon", "Europe"],
-        image: "images/Artforartemis.jpg"
-    },
-    {
-        id: 6,
-        title: "NASA's Partnership Between Art and Science: A Collaboration to Cherish",
-        category: "collaboration",
-        description: "NASA has partnered with the Maryland Institute College of Art (MICA) to bring complex astrophysics concepts to life for the public through animation.",
-        year: 2020,
-        contributors: ["NASA", "Maryland Institute College of Art", "Laurence Arcadias", "Robin Corbet"],
-        link: "https://www.nasa.gov/centers-and-facilities/goddard/nasas-partnership-between-art-and-science-a-collaboration-to-cherish/",
-        keywords: ["NASA", "animation", "art-science", "USA"],
-        image: "images/nasacherish.jpg"
-    },
-    {
-        id: 7,
-        title: "The Bruce Murray Space Image Library",
-        category: "collaboration",
-        description: "A unique collection of recent and past photos and videos from the world's space agencies, artwork, diagrams, and amateur-processed space images.",
-        year: "",
-        contributors: ["The Planetary Society"],
-        link: "https://www.planetary.org/space-images",
-        keywords: ["space images", "archive", "USA"],
-        image: "images/glue-ghost-lunar-sunrise.jpg"
-    },
-    {
-        id: 8,
-        title: "PlanetScape: Fusing art, science and technology",
-        category: "collaboration",
-        description: "A multimedia project that combines art, science and interactive technology to explore possible planets for human survival in the future.",
-        year: 2024,
-        contributors: ["University of Arizona Health Science", "Yuanyuan Kay He", "Peter Torpey", "Gustavo de Oliveira Almeida"],
-        link: "https://healthsciences.arizona.edu/news/stories/planetscape-fusing-art-science-and-technology",
-        keywords: ["exoplanets", "multimedia", "interactive", "USA"],
-        image: "images/planetscape.jpg"
-    },
-    {
-        id: 9,
-        title: "SPACE Lab [co-creative art astronomy experiments]",
-        category: "collaboration",
-        description: "Presents an expanded field of experiments as artworks co-developed by artists with astrophysicists.",
-        year: 2023,
-        contributors: ["Art in Perprtuity Trust", "Nicola Rae", "Ulrike Kuchner"],
-        link: "https://www.aptstudios.org/exhibitions2223-spacelab",
-        keywords: ["art-astronomy", "experiments", "UK"],
-        image: "images/space+lab+2.jpg"
-    },
-    {
-        id: 10,
-        title: "Small Void",
-        category: "artwork",
-        description: "A cooperative two-player 'call and response' game exploring the limits of language, attachment theory and cosmic annihilation.",
-        year: 2025,
-        contributors: ["CERN", "Alice Bucknell"],
-        link: "https://arts.cern/commission/small-void/",
-        keywords: ["game", "cosmic", "CERN", "USA"],
-        image: "images/small-void.jpg"
-    },
-    {
-        id: 11,
-        title: "Chroma VII",
-        category: "artwork",
-        description: "A large knotted form inspired by the connections between space, energy, and matter. It consists of 324 cells made of transparent polymers that change color and pattern with kinetic movement.",
-        year: 2023,
-        contributors: ["CERN", "Yunchul Kim"],
-        link: "https://arts.cern/commission/chroma-5/",
-        keywords: ["kinetic art", "CERN", "South Korea"],
-        image: "images/chroma-vii.jpg"
-    },
-    {
-        id: 12,
-        title: "Pacific Standard Universe",
-        category: "artwork",
-        description: "An original short film about how people used art to explain the cosmos for thousands of years until the modern universe was discovered in southern California.",
-        year: 2025,
-        contributors: ["Griffith Observatory", "PST ART"],
-        link: "https://griffithobservatory.org/shows/pacific-standard-universe/",
-        keywords: ["short film", "cosmos", "USA"],
-        image: "images/pacific-standard.jpg"
-    },
-    {
-        id: 13,
-        title: "Celestial Pottery",
-        category: "artwork",
-        description: "Ceramic painter who uses glaze to illustrate dramatic celestial scenes on pottery.",
-        year: "since 2020",
-        contributors: ["Amy Rae Hill"],
-        link: "https://amyraehill.com/portfolio",
-        keywords: ["ceramics", "pottery", "USA"],
-        image: "images/celestial-pottery.jpg"
-    },
-    {
-        id: 14,
-        title: "Jupiter Painting",
-        category: "artwork",
-        description: "Astronomy artist who combines passion for art and astrophysics to create celestial paintings.",
-        year: 2021,
-        contributors: ["Ash Wheeler"],
-        link: "https://www.dustandashco.com/portfolio-1/ngds22ya5f5wbfgt5irpu9dw6li6n0",
-        keywords: ["painting", "astronomy art", "Georgia"],
-        image: "images/jupiter-painting.jpg"
-    },
-    {
-        id: 15,
-        title: "The Wandering Earth 2",
-        category: "artwork",
-        description: "Chinese science fiction film about Earth being destroyed by the Sun and humans attempting to push Earth out of the solar system.",
-        year: 2023,
-        contributors: ["China Film Group Corporation", "Frant Gwo"],
-        link: "https://en.wikipedia.org/wiki/The_Wandering_Earth_2",
-        keywords: ["sci-fi", "Chinese cinema", "China"],
-        image: "images/wandering-earth.jpeg"
-    },
-    {
-        id: 16,
-        title: "Wood Slice Galaxy Painting",
-        category: "artwork",
-        description: "Hand-painted wood chip artwork featuring celestial themes such as galaxies and nebulae.",
-        year: 2020,
-        contributors: ["Chrissy Sparks"],
-        link: "https://www.facebook.com/ChrissySparksArt",
-        keywords: ["wood art", "galaxies", "Colorado"],
-        image: "images/wood-slice-galaxy.jpg"
-    },
-    {
-        id: 17,
-        title: "Art for Artemis Slideshow",
-        category: "artwork",
-        description: "Design and multimedia students from Europe submitted artwork for the transatlantic voyage of the European Service Module-3 for lunar landing.",
-        year: 2022,
-        contributors: ["ESA"],
-        link: "https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/Orion/Art_for_Artemis_slideshow",
-        keywords: ["Artemis", "student art", "Europe"],
-        image: "images/artemis-slideshow.jpg"
-    },
-    {
-        id: 18,
-        title: "The Gift",
-        category: "artwork",
-        description: "Immersive installation blending astrophysics and emotional reflection, inspired by the research of Dr. Natalie Gosnell.",
-        year: 2023,
-        contributors: ["Fine Arts Center/Seagraves Galleries", "Amy Myers", "Katie Hodge", "Tina-Hanaé Miller", "Solomon Hoffman", "Natalie Gosnell", "Janani Balasubramanian", "Andrew Kircher"],
-        link: "https://fac.coloradocollege.edu/exhibits/the-gift/",
-        keywords: ["immersive", "astrophysics", "Colorado"],
-        image: "images/the-gift.jpg"
-    },
-    {
-        id: 19,
-        title: "NASA Artists Are Creating Eye-Popping Posters for the Eclipse",
-        category: "artwork",
-        description: "Original scientific yet jaw-dropping posters to educate, engage, and promote astronomy tourism for the eclipse.",
-        year: 2024,
-        contributors: ["NASA", "Tyler Nordgren"],
-        link: "https://www.atlasobscura.com/articles/nasa-eclipse-art",
-        keywords: ["eclipse", "posters", "USA"],
-        image: "images/nasa-eclipse-posters.jpg"
-    },
-    {
-        id: 20,
-        title: "Mai Wada and Anastasia Kokori's Artworks",
-        category: "artwork",
-        description: "Collaboration aiming to create a new vision of the universe by merging artistic and scientific perspectives.",
-        year: "since 2017",
-        contributors: ["Mai Wada", "Anastasia Kokori"],
-        link: "https://www.maiwada.com/",
-        keywords: ["artist-astronomer", "collaboration", "Japan/Greek"],
-        image: "images/wada-kokori.jpg"
-    },
-    {
-        id: 21,
-        title: "M87* One Year Later: Catching the Black Hole's Turbulent Accretion Flow",
-        category: "astronomyproject",
-        description: "Event Horizon Telescope collaboration used observations to deepen our understanding of the supermassive black hole at the center of Messier 87.",
-        year: "since 2024",
-        contributors: ["Event Horizon Telescope Collaboration", "Harvard faculty of Arts and Science"],
-        link: "https://eventhorizontelescope.org/m87-one-year-later-catching-black-holes-turbulent-accretion-flow",
-        keywords: ["black hole", "EHT", "USA"],
-        image: "images/m87-blackhole.png"
-    },
-    {
-        id: 22,
-        title: "Explore Earth and Space With Art - Now Including Mars!",
-        category: "astronomyproject",
-        description: "Creative, hands-on activities that integrate art and science education, now including Mars-focused projects.",
-        year: 2024,
-        contributors: ["NASA Jet Propulsion Laboratory"],
-        link: "https://www.jpl.nasa.gov/edu/resources/project/explore-earth-and-space-with-art-now-including-mars/",
-        keywords: ["education", "Mars", "USA"],
-        image: "images/earth-space-art.jpg"
-    },
-    {
-        id: 23,
-        title: "Gaia Art Project",
-        category: "astornomyproject",
-        description: "Global space astrometry mission building the largest, most precise three-dimensional map of our Galaxy.",
-        year: "since 2000",
-        contributors: ["ESA"],
-        link: "https://www.esa.int/Science_Exploration/Space_Science/Gaia/Gaia_overview",
-        keywords: ["Gaia", "star map", "Europe"],
-        image: "images/gaia-project.jpg"
-    },
-    {
-        id: 24,
-        title: "Solar Dynamics Observatory",
-        category: "mission",
-        description: "Designed to help us understand the Sun's influence on Earth and Near-Earth space by studying the solar atmosphere.",
-        year: "since 2010",
-        contributors: ["NASA"],
-        link: "https://sdo.gsfc.nasa.gov/",
-        keywords: ["Sun", "solar", "USA"],
-        image: "images/solar-dynamics.jpg"
-    },
-    {
-        id: 25,
-        title: "Hebridean Dark Skies Festival",
-        category: "event",
-        description: "Annual programme of arts and astronomy events including live music, film, visual arts, theatre, astronomy talks and stargazing.",
-        year: "since 2019",
-        contributors: ["An Lanntair"],
-        link: "https://lanntair.com/creative-programme/darkskies/",
-        keywords: ["dark skies", "festival", "global"],
-        image: "images/hebridean-dark.jpeg"
-    },
-    {
-        id: 26,
-        title: "Plants and Planets Leiden",
-        category: "exhibition",
-        description: "Takes visitors on a journey through time and space to explore the origins of life through science, art and nature.",
-        year: "2025-2029",
-        contributors: ["Leiden University", "Hortus Leiden"],
-        link: "https://hortusleiden.nl/zien-en-doen/agenda/activiteiten/planten-planeten#",
-        keywords: ["origins of life", "biology", "Netherlands"],
-        image: "images/plants-planets.jpg"
-    },
-    {
-        id: 27,
-        title: "The Immersive Power of Light Exhibition",
-        category: "exhibition",
-        description: "Provides a platform for dialogue between artistic expression and scientific inquiry about the nature of light.",
-        year: 2024,
-        contributors: ["Macquarie University Faculty of Science and Engineering", "Rhonda Davis", "Leonard Janiszewski", "Andrew Simpson"],
-        link: "https://www.mq.edu.au/faculty-of-science-and-engineering/news/news/astronomy-and-art-collide",
-        keywords: ["light", "perception", "Australia"],
-        image: "images/immersive-light.jpeg"
-    },
-    {
-        id: 28,
-        title: "Mapping the Heavens Exhibition",
-        category: "exhibition",
-        description: "Explores the developing art and science of astronomy in Islamic countries and Europe through historical artifacts.",
-        year: 2024,
-        contributors: ["Nelson Atkins museum of art"],
-        link: "https://nelson-atkins.org/new-multi-cultural-multi-faith-advancement-of-astronomy-exhibition/",
-        keywords: ["historical", "multicultural", "USA"],
-        image: "images/mapping-heavens.jpg"
-    },
-    {
-        id: 29,
-        title: "Cosmos Archaeology: Exploring the universe through Art & Science",
-        category: "exhibition",
-        description: "Blends art and science to reveal the depths of the universe through physics, perception, and sensory interaction.",
-        year: 2024,
-        contributors: ["Swissnex", "EPFL Pavilions", "Shanghai Astronomy Museum", "Sarah Kenderdine", "Iris Long", "Jean-Paul Kneib"],
-        link: "https://swissnex.org/china/event/cosmos-archaeology-%E5%AE%87%E5%AE%99%E8%80%83%E5%8F%A4/",
-        keywords: ["immersive", "archaeology", "Switzerland/China"],
-        image: "images/cosmos-archaeology.jpg"
-    },
-    {
-        id: 30,
-        title: "Arts at CERN Exhibition: Exploring the Unknown",
-        category: "exhibition",
-        description: "Brings together art and science communities to delve into the unsolved mysteries of the Universe.",
-        year: "2023-2026",
-        contributors: ["CERN", "Benjamin Maus", "Chloé Delarue", "Julius von Bismarck", "Ryoji Ikeda", "Yunchul Kim"],
-        link: "https://arts.cern/exhibition/exploring-the-unknown/",
-        keywords: ["CERN", "quantum", "Switzerland"],
-        image: "images/cern-arts.jpg"
-    },
-    {
-        id: 31,
-        title: "Blended Worlds: Experiments In Interplanetary Imagination",
-        category: "exhibition",
-        description: "Explores the relationship between humans and our expanding environment through art-science collaborations.",
-        year: "2024-2025",
-        contributors: ["PST ART", "Ekene Ejioma", "David Bowen", "Darel Carey", "Annette Lee", "Ada Limón", "Bruce Mau", "Viktoria Modesta", "Shane Myrbeck", "Moon Ribas", "Raffi Joe Wartanian", "Saskia Wilson-Brown"],
-        link: "https://pst.art/exhibitions/blended-worlds",
-        keywords: ["interplanetary", "empathy", "USA"],
-        image: "images/blended-worlds.png"
-    },
-    {
-        id: 32,
-        title: "Lumen: The Art and Science of Light",
-        category: "exhibition",
-        description: "Explores how medieval thinkers explained the universe, nature, planetary motion and world philosophy through the study of light.",
-        year: 2024,
-        contributors: ["PST ART", "Charles Ross", "Helen Pashgian"],
-        link: "https://pst.art/en/exhibitions/lumen-the-art-science-of-light",
-        keywords: ["medieval", "light", "USA"],
-        image: "images/lumen.png"
-    },
-    {
-        id: 33,
-        title: "Mapping the Infinite: Cosmologies Across Cultures",
-        category: "exhibition",
-        description: "Presents rare and visually stunning artworks from across cultures and time periods to explore humanity's diverse interpretations of the universe.",
-        year: "2024-2025",
-        contributors: ["PST ART", "Josiah McElheny", "Carnegie Observatories", "Griffith Observatory"],
-        link: "https://pst.art/en/exhibitions/mapping-the-infinite",
-        keywords: ["cosmologies", "cross-cultural", "USA"],
-        image: "images/mapping-infinite.png"
-    }
-
-];
-
-
-
 document.getElementById('ask-button').addEventListener('click', askAI);
-
 
 document.getElementById('ai-search').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
@@ -388,329 +25,263 @@ document.getElementById('ai-search').addEventListener('keypress', function(e) {
     }
 });
 
-function initUpload() {
-  
-    document.getElementById('upload-btn').addEventListener('click', () => {
-        new bootstrap.Modal(document.getElementById('upload-modal')).show();
-    });
-
-    
-    document.getElementById('project-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const form = e.target;
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        
-        try {
-
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>Uploading...`;
-            
-
-            const formData = new FormData(form);
-            formData.append('keywords', formData.get('keywords').split(',').map(k => k.trim()));
-            formData.append('contributors', formData.get('contributors').split(',').map(c => c.trim()));
-            
-
-            const response = await fetch(`${BACKEND_API_BASE_URL}/api/projects`, {
-                method: 'POST',
-                body: formData
-            });
-
-            
-            if (!response.ok) throw new Error(await response.text());
-            
-
-            const newProject = await response.json();
-            astronomyItems.unshift(newProject);
-            renderItems(astronomyItems);
-            
-       
-            form.reset();
-            bootstrap.Modal.getInstance(document.getElementById('upload-modal')).hide();
-            
-            alert('Project submitted successfully!');
-        } catch (err) {
-            console.error('Upload failed:', err);
-            alert(`Upload failed: ${err.message}`);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-        }
-    });
-}
-// Initialize the page
-document.addEventListener('DOMContentLoaded', function() {
-    renderItems(astronomyItems);
-    setupEventListeners();
-    initUpload(); 
-});
-
-// Render items to the page
-function renderItems(items) {
-    const container = document.getElementById('items-container');
-    container.innerHTML = '';
-    
-    items.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'col-md-6 col-lg-4 mb-4';
-        card.innerHTML = `
-        <div class="card item-card h-100" data-category="${item.category}" data-id="${item.id}">
-          <img src="${item.image}" class="card-img-top" alt="${item.title}" 
-               style="height: 200px; object-fit: cover;"
-               onerror="this.onerror=null;this.src='images/default.jpg'">
-          <div class="card-body">
-            <h5 class="card-title">${item.title}</h5>
-            <h6 class="card-subtitle mb-2 text-muted">${item.year} • ${item.contributors.join(', ')}</h6>
-            <p class="card-text">${item.description.substring(0, 100)}...</p>
-            <div class="mb-3">
-              ${item.keywords.map(keyword => `<span class="badge badge-custom">${keyword}</span>`).join('')}
-            </div>
-            <button class="btn btn-outline-primary view-detail" 
-                     data-item='${JSON.stringify(item).replace(/'/g, "\\'")}'>
-              <i class="fas fa-expand me-2"></i>View Detail
-            </button>
-          </div>
-        </div>
-      `;
-      
-        container.appendChild(card);
-    });
-}
-
 document.addEventListener('click', function(e) {
     const btn = e.target.closest('.view-detail');
     if (!btn) return;
 
+    // Use dataset.id to directly fetch from the global list or re-fetch from backend if needed
+    const itemId = btn.dataset.itemId; // Changed to data-item-id
+    const item = allApprovedProjects.find(p => p._id === itemId); // Use _id from MongoDB
 
-    console.log("Raw data-item:", btn.dataset.item);
-
-    try {
-    
-        let itemData = btn.dataset.item;
-        
-    
-        if (!itemData.endsWith('}')) {
-            itemData = itemData.substring(0, itemData.lastIndexOf('}') + 1);
-        }
-        
-     
-        itemData = itemData
-            .replace(/\\"/g, '"')    
-            .replace(/\\'/g, "'"); 
-        
-        const item = JSON.parse(itemData);
+    if (item) {
         showDetailModal(item);
-    } catch (err) {
-        console.error("解析失败 - 原始数据:", btn.dataset.item);
-        console.error("错误详情:", err);
-        alert("加载详情失败，请刷新后重试");
+    } else {
+        console.error("Project not found in local cache:", itemId);
+        // Optionally, re-fetch this specific project from backend if not found
+        // This scenario should be rare if allApprovedProjects is kept up-to-date
+        alert("Failed to find project details locally. Please refresh.");
     }
 });
-  
 
-  function showDetailModal(item) {
-    document.getElementById('detail-title').textContent = item.title;
-    document.getElementById('detail-image').src = item.image;
-    document.getElementById('detail-year').textContent = item.year;
-    document.getElementById('detail-contributors').textContent = item.contributors.join(', ');
-    document.getElementById('detail-description').textContent = item.description;
-    document.getElementById('detail-link').href = item.link;
-    
- 
-    const keywordsContainer = document.getElementById('detail-keywords');
-    keywordsContainer.innerHTML = item.keywords.map(k => 
-      `<span class="badge badge-custom me-2 mb-2">${k}</span>`
-    ).join('');
-    
+// --- Project Submission and Display ---
 
-    const modal = new bootstrap.Modal(document.getElementById('detail-modal'));
-    modal.show();
-  }
-// Set up event listeners
-function setupEventListeners() {
-    // Category filtering
-    document.querySelectorAll('.category-filter button').forEach(button => {
-        button.addEventListener('click', function() {
-            document.querySelector('.category-filter .active').classList.remove('active');
-            this.classList.add('active');
-            
-            const category = this.dataset.category;
-            const container = document.getElementById('items-container');
-            container.innerHTML = '';
-            
-            if (category === 'all') {
-                renderItems(astronomyItems);
-            } else {
-                const filteredItems = astronomyItems.filter(item => item.category === category);
-                renderItems(filteredItems);
-            }
-        });
-    });
-    
-    // Load more button (simulated)
-    document.getElementById('load-more').addEventListener('click', function() {
-        this.textContent = 'No more items to load';
-        this.disabled = true;
-    });
-    
-    // Handle Enter key in search box
-    document.getElementById('ai-search').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            askAI();
-        }
-    });
-}
+async function handleProjectSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form); // Get form data including file
 
-document.addEventListener('DOMContentLoaded', function() {
- 
-    const btn = document.getElementById('upload-btn');
-    if (btn) {
-        btn.addEventListener('click', handleUploadClick);
-    }
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true; // Disable button to prevent multiple submissions
+    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
 
-
-    document.body.addEventListener('click', function(e) {
-        if (e.target.closest('#upload-btn')) {
-            handleUploadClick();
-        }
-    });
-});
-
-function handleUploadClick() {
-    console.log('[调试] 上传按钮被点击');
     try {
-        const modal = new bootstrap.Modal(
-            document.getElementById('upload-modal'), 
-            { keyboard: true }
-        );
-        modal.show();
-    } catch (err) {
-        console.error('模态框初始化失败:', err);
+        const response = await fetch(`${BACKEND_API_BASE_URL}/api/projects`, {
+            method: 'POST',
+            body: formData // FormData handles multipart/form-data correctly
+        });
 
-        document.getElementById('upload-modal').classList.add('show');
-        document.getElementById('upload-modal').style.display = 'block';
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('Project submitted successfully and awaiting approval!');
+            form.reset(); // Clear form
+        } else {
+            alert(`Error: ${data.message || 'Failed to submit project.'}`);
+            console.error('Submission error:', data.message);
+        }
+    } catch (error) {
+        console.error('Network error during submission:', error);
+        alert('An error occurred during submission. Please try again later.');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fas fa-upload me-2"></i>Submit';
     }
 }
 
-async function askAI() {
-    const questionInput = document.getElementById('ai-search');
-    const question = questionInput.value.trim();
-    const responseElement = document.getElementById('ai-response');
-    
-    if (!question) {
-        alert("Please enter your question");
+
+async function fetchApprovedProjects() {
+    try {
+        const response = await fetch(`${BACKEND_API_BASE_URL}/api/projects/approved`);
+        const projects = await response.json();
+        allApprovedProjects = projects; // Store globally for AI and detail modal
+        renderProjects(projects);
+    } catch (error) {
+        console.error('Error fetching approved projects:', error);
+        const projectsContainer = document.getElementById('projects-container');
+        if (projectsContainer) {
+            projectsContainer.innerHTML = '<p class="text-danger">Failed to load projects. Please try again later.</p>';
+        }
+    }
+}
+
+function renderProjects(projects) {
+    const container = document.getElementById('projects-container');
+    if (!container) return; // Ensure container exists
+
+    container.innerHTML = ''; // Clear previous content
+
+    if (projects.length === 0) {
+        container.innerHTML = '<p class="text-muted">No approved projects to display yet. Check back soon!</p>';
         return;
     }
-    
 
-    responseElement.style.display = 'block';
-    responseElement.innerHTML = `
-        <div class="d-flex align-items-center">
-            <div class="spinner-border text-primary me-3" role="status">
-                <span class="visually-hidden">Loading...</span>
+    projects.forEach(project => {
+        const card = document.createElement('div');
+        card.className = 'col-lg-4 col-md-6 mb-4';
+        card.innerHTML = `
+            <div class="card h-100 shadow-sm border-0">
+                <img src="${project.imageUrl}" class="card-img-top project-card-img" alt="${project.title}">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">${project.title}</h5>
+                    <p class="card-text text-muted small">${project.category}</p>
+                    <p class="card-text flex-grow-1">${project.description.substring(0, 100)}...</p>
+                    <div class="mt-auto">
+                        <button class="btn btn-sm btn-outline-primary view-detail" data-item-id="${project._id}">
+                            View Details <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0 text-end">
+                    <small class="text-muted">By: ${project.uploaderName}</small>
+                </div>
             </div>
-            <div>Thinking about your question...</div>
-        </div>
-    `;
-    
+        `;
+        container.appendChild(card);
+    });
+}
+
+function showDetailModal(item) {
+    const detailModal = new bootstrap.Modal(document.getElementById('projectDetailModal'));
+    document.getElementById('detailModalTitle').textContent = item.title;
+    document.getElementById('detailModalImage').src = item.imageUrl;
+    document.getElementById('detailModalDescription').textContent = item.description;
+    document.getElementById('detailModalCategory').textContent = item.category;
+    document.getElementById('detailModalUploader').textContent = item.uploaderName;
+
+    const detailModalLink = document.getElementById('detailModalLink');
+    if (item.link) {
+        detailModalLink.href = item.link;
+        detailModalLink.textContent = 'View Original Project';
+        detailModalLink.style.display = 'inline-block';
+    } else {
+        detailModalLink.style.display = 'none'; // Hide if no link
+    }
+
+    detailModal.show();
+}
+
+// --- AI Chat Functions ---
+
+// 【MODIFICATION】Remove the buildPrompt function from app.js
+// It will now be handled entirely on the server-side.
+/*
+function getUniqueCategories(projects) { ... }
+function getProjectExamples(projects, count) { ... }
+function buildPrompt(question, currentProjects) { ... }
+*/
+
+
+async function askAI() {
+    const question = aiSearchInput.value.trim();
+    if (!question) {
+        alert('Please enter your question for the AI.');
+        return;
+    }
+
+    // Display user question
+    appendMessage('You', question);
+    aiSearchInput.value = ''; // Clear input
+
+    // Show loading spinner
+    aiResponseDiv.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+    aiResponseDiv.style.display = 'block'; // Ensure it's visible
+
     try {
-        
-        const prompt = buildPrompt(question);
-        
-       
         const response = await fetch(`${BACKEND_API_BASE_URL}/api/ask`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-  
-                prompt: prompt 
-  
-            })
+            // 【MODIFICATION】Only send the question, backend will build the prompt
+            body: JSON.stringify({ question: question })
         });
- 
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-        }
-        
+
         const data = await response.json();
-        
-  
-        responseElement.innerHTML = `
-            <div class="mb-2">
-                <strong><i class="fas fa-question-circle me-2"></i>Your Question:</strong>
-                <p class="ms-4">${question}</p>
-            </div>
-            <div>
-                <strong><i class="fas fa-robot me-2"></i>AI Response:</strong>
-                <p class="ms-4">${formatResponse(data.answer)}</p>
-            </div>
-        `;
-        
+
+        if (response.ok) {
+            // Remove spinner
+            aiResponseDiv.innerHTML = '';
+            // 【MODIFICATION】Use formatResponse to display AI answer (now includes link formatting)
+            appendMessage('AI', formatResponse(data.answer));
+        } else {
+            // Remove spinner
+            aiResponseDiv.innerHTML = '';
+            appendMessage('AI', `Error: ${data.message || 'Failed to get AI response.'}`);
+            console.error('AI response error:', data.message);
+        }
     } catch (error) {
-        console.error('Error:', error);
-        responseElement.innerHTML = `
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                Sorry, there was an error processing your request: ${error.message}
-            </div>
-        `;
+        // Remove spinner
+        aiResponseDiv.innerHTML = '';
+        appendMessage('AI', 'An error occurred while connecting to the AI. Please try again.');
+        console.error('Fetch AI error:', error);
     }
 }
 
+function appendMessage(sender, message) {
+    const messageElement = document.createElement('div');
+    messageElement.className = `alert ${sender === 'You' ? 'alert-info' : 'alert-success'} d-flex align-items-center mt-2`;
 
-function getProjectExamples(count) {
-    if (!astronomyItems?.length) return "";
-    return astronomyItems
-        .sort((a, b) => (b.year || "").toString().localeCompare((a.year || "").toString())) // 确保年份可比较
-        .slice(0, count)
-        .map(item => `- "${item.title}" (${item.year}): ${item.description.substring(0, 80)}...`)
-        .join('\n');
+    const icon = sender === 'You' ? 'fas fa-user' : 'fas fa-robot';
+    messageElement.innerHTML = `<i class="${icon} me-2"></i><div><strong>${sender}:</strong> ${message}</div>`;
+
+    aiResponseDiv.appendChild(messageElement);
+    aiResponseDiv.scrollTop = aiResponseDiv.scrollHeight; // Scroll to bottom
 }
 
-
-function getUniqueCategories() {
-    return [...new Set(astronomyItems.map(item => item.category))];
-}
-
-
-function buildPrompt(question) {
-    return `[INST]
-<<SYS>>
-You are an expert on astronomy and art collaborations. Answer the user's question directly based on the provided project database.
-Key dataset characteristics:
-- Categories: ${getUniqueCategories().join(', ')}
-- Example projects:
-${getProjectExamples(3)} 
-Rules:
-1. Respond ONLY with the answer content
-2. Never include [INST], <<SYS>>, or any other instruction markers
-3. Do not explain how you generated the answer
-4. Keep responses under 200 words
-5. If uncertain, say "I couldn't find relevant projects matching your query"
-6.Infer answers from ALL ${astronomyItems.length} projects (not just examples)
-7.Never list projects unless asked
-8.
-
-<</SYS>>
-
-Question: ${question}
-[/INST]`;
-}
-
-
-
+// 【MODIFICATION】Updated formatResponse to handle Markdown links
 function formatResponse(text) {
-
+    // Clean up any lingering instruction markers if the AI model echoes them
     text = text.replace(/\[INST\]/g, '').replace(/\[\/INST\]/g, '');
-    text = text.replace(/<<SYS>>/g, '').replace(/<\/?SYS>>/g, ''); 
+    text = text.replace(/<<SYS>>/g, '').replace(/<\/?SYS>>/g, '');
 
-    return text
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // 加粗
-        .replace(/\*(.*?)\*/g, '<em>$1</em>') // 斜体
-        .replace(/\n/g, '<br>'); // 换行
+    // Convert **text** to <strong>text</strong>
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    // Convert *text* to <em>text</em>
+    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+    // Convert - or * list items to HTML list
+    // This regex matches lines starting with '- ' or '* '
+    text = text.replace(/^(- |\* )(.*)$/gm, '<li>$2</li>');
+    // If any list items were found, wrap the whole block in <ul>
+    if (text.includes('<li>')) {
+        // This is a simple approach; for complex cases, you might need a Markdown parser library
+        text = `<ul>${text}</ul>`;
+    }
+
+    // 【NEW/MODIFIED】Recognize Markdown links and convert to HTML links
+    // This regex looks for [Any Text](http or https://Any URL)
+    // $1 captures the link text, $2 captures the URL
+    text = text.replace(/\[(.*?)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+    // Simple newline characters to <br> for basic formatting
+    text = text.replace(/\n/g, '<br>');
+
+    return text;
+}
+
+
+// --- Utility Functions ---
+
+function setupEventListeners() {
+    // Project submission form
+    const projectForm = document.getElementById('projectForm');
+    if (projectForm) {
+        projectForm.addEventListener('submit', handleProjectSubmit);
+    }
+
+    // AI chat elements
+    aiSearchInput = document.getElementById('ai-search');
+    aiResponseDiv = document.getElementById('ai-response');
+}
+
+function initUpload() {
+    const imageInput = document.getElementById('image');
+    const imagePreview = document.getElementById('imagePreview');
+
+    if (imageInput && imagePreview) {
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(this.files[0]);
+            } else {
+                imagePreview.src = '#';
+                imagePreview.style.display = 'none';
+            }
+        });
+    }
 }
