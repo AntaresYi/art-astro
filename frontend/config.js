@@ -1,0 +1,1 @@
+const BACKEND_API_BASE_URL = 'https://art-astro-qvm2.onrender.com';

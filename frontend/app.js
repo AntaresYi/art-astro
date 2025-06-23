@@ -5,7 +5,6 @@ console.log("Script loaded!");
 // IMPORTANT: Update this URL for your deployed backend
 // For local development, it might be 'http://localhost:3001'
 // For Render deployment, it will be your Render backend service URL
-const BACKEND_API_BASE_URL = 'https://art-astro-qvm2.onrender.com'; // 【MODIFICATION】Update this with your actual Render backend URL
 
 // Global variable to store all fetched approved projects (still useful for display logic)
 let allApprovedProjects = [];
