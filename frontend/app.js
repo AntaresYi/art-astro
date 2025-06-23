@@ -2,11 +2,6 @@
 
 console.log("Script loaded!");
 
-// IMPORTANT: Update this URL for your deployed backend
-// For local development, it might be 'http://localhost:3001'
-// For Render deployment, it will be your Render backend service URL
-
-// Global variable to store all fetched approved projects (still useful for display logic)
 let allApprovedProjects = [];
 
 // --- Event Listeners and Initial Setup ---
@@ -86,7 +81,7 @@ async function fetchApprovedProjects() {
         renderProjects(projects);
     } catch (error) {
         console.error('Error fetching approved projects:', error);
-        const projectsContainer = document.getElementById('projects-container');
+        const projectsContainer = document.getElementById('items-container');
         if (projectsContainer) {
             projectsContainer.innerHTML = '<p class="text-danger">Failed to load projects. Please try again later.</p>';
         }
@@ -94,7 +89,7 @@ async function fetchApprovedProjects() {
 }
 
 function renderProjects(projects) {
-    const container = document.getElementById('projects-container');
+    const container = document.getElementById('items-container');
     if (!container) return; // Ensure container exists
 
     container.innerHTML = ''; // Clear previous content
