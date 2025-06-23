@@ -537,7 +537,7 @@ app.post('/api/ask', apiLimiter, async (req, res) => {
     try {
         // Fetch all approved projects from the database
         // Select only the fields necessary for the prompt to reduce data transfer
-        const approvedProjects = await Project.find({ status: 'approved' }).select('title category link');
+        const approvedProjects = await Project.find({ isApproved: true }).select('title category link');
 
         // Build the prompt on the server-side using the fetched projects
         const prompt = buildPrompt(question, approvedProjects);

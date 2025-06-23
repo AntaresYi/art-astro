@@ -81,7 +81,7 @@ async function handleProjectSubmit(event) {
 
 async function fetchApprovedProjects() {
     try {
-        const response = await fetch(`${BACKEND_API_BASE_URL}/api/projects/approved`);
+        const response = await fetch(`${BACKEND_API_BASE_URL}/api/projects`);
         const projects = await response.json();
         allApprovedProjects = projects; // Store globally for AI and detail modal
         renderProjects(projects);
