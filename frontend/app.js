@@ -2,6 +2,11 @@
 
 console.log("Script loaded!");
 
+// IMPORTANT: Update this URL for your deployed backend
+// For local development, it might be 'http://localhost:3001'
+// For Render deployment, it will be your Render backend service URL
+
+// Global variable to store all fetched approved projects
 let allApprovedProjects = [];
 
 // --- Event Listeners and Initial Setup ---
@@ -33,91 +38,78 @@ document.addEventListener('click', function(e) {
         console.error("Project not found in local cache:", itemId);
         // Optionally, re-fetch this specific project from backend if not found
         // This scenario should be rare if allApprovedProjects is kept up-to-date
-        alert("Failed to find project details locally. Please refresh.");
+        alert("Failed to load project details. Please try again.");
     }
 });
 
-// --- Project Submission and Display ---
-
-async function handleProjectSubmit(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form); // Get form data including file
-
-    const submitButton = form.querySelector('button[type="submit"]');
-    submitButton.disabled = true; // Disable button to prevent multiple submissions
-    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
-
-    try {
-        const response = await fetch(`${BACKEND_API_BASE_URL}/api/projects`, {
-            method: 'POST',
-            body: formData // FormData handles multipart/form-data correctly
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            alert('Project submitted successfully and awaiting approval!');
-            form.reset(); // Clear form
-        } else {
-            alert(`Error: ${data.message || 'Failed to submit project.'}`);
-            console.error('Submission error:', data.message);
-        }
-    } catch (error) {
-        console.error('Network error during submission:', error);
-        alert('An error occurred during submission. Please try again later.');
-    } finally {
-        submitButton.disabled = false;
-        submitButton.innerHTML = '<i class="fas fa-upload me-2"></i>Submit';
-    }
-}
-
-
+// --- Project Fetching and Rendering ---
 async function fetchApprovedProjects() {
+    const container = document.getElementById('items-container');
+    container.innerHTML = `
+        <div class="col-12 text-center py-5" id="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading projects from the library...</p>
+        </div>
+    `;
+
     try {
         const response = await fetch(`${BACKEND_API_BASE_URL}/api/projects`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const projects = await response.json();
-        allApprovedProjects = projects; // Store globally for AI and detail modal
-        renderProjects(projects);
+        allApprovedProjects = projects; // Store fetched projects globally
+        renderItems(allApprovedProjects); // Render all fetched projects initially
     } catch (error) {
         console.error('Error fetching approved projects:', error);
-        const projectsContainer = document.getElementById('items-container');
-        if (projectsContainer) {
-            projectsContainer.innerHTML = '<p class="text-danger">Failed to load projects. Please try again later.</p>';
-        }
+        container.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Failed to load projects. Please try refreshing the page.
+                </div>
+            </div>
+        `;
+    } finally {
+        const spinner = document.getElementById('loading-spinner');
+        if (spinner) spinner.remove();
     }
 }
 
-function renderProjects(projects) {
+function renderItems(itemsToRender) {
     const container = document.getElementById('items-container');
-    if (!container) return; // Ensure container exists
+    container.innerHTML = ''; // Clear existing items
 
-    container.innerHTML = ''; // Clear previous content
-
-    if (projects.length === 0) {
-        container.innerHTML = '<p class="text-muted">No approved projects to display yet. Check back soon!</p>';
+    if (itemsToRender.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <h4>No projects found for this category.</h4>
+                <p>Try selecting another category or submitting a new project!</p>
+            </div>
+        `;
         return;
     }
 
-    projects.forEach(project => {
+    itemsToRender.forEach(item => {
         const card = document.createElement('div');
-        card.className = 'col-lg-4 col-md-6 mb-4';
+        card.className = 'col-md-6 col-lg-4 mb-4';
         card.innerHTML = `
-            <div class="card h-100 shadow-sm border-0">
-                <img src="${project.imageUrl}" class="card-img-top project-card-img" alt="${project.title}">
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">${project.title}</h5>
-                    <p class="card-text text-muted small">${project.category}</p>
-                    <p class="card-text flex-grow-1">${project.description.substring(0, 100)}...</p>
-                    <div class="mt-auto">
-                        <button class="btn btn-sm btn-outline-primary view-detail" data-item-id="${project._id}">
-                            View Details <i class="fas fa-arrow-right ms-2"></i>
-                        </button>
-                    </div>
+            <div class="card item-card h-100" data-category="${item.category}" data-id="${item._id}">
+              <img src="${item.imageUrl}" class="card-img-top" alt="${item.title}"
+                   onerror="this.onerror=null;this.src='images/default.jpg'">
+              <div class="card-body">
+                <h5 class="card-title">${item.title}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">${item.year} • ${item.contributors.join(', ')}</h6>
+                <p class="card-text">${item.description.substring(0, 100)}...</p>
+                <div class="mb-3">
+                  ${item.keywords.map(keyword => `<span class="badge badge-custom">${keyword}</span>`).join('') || 'N/A'}
                 </div>
-                <div class="card-footer bg-white border-0 text-end">
-                    <small class="text-muted">By: ${project.uploaderName}</small>
-                </div>
+                <button class="btn btn-outline-primary view-detail"
+                         data-item-id="${item._id}">
+                  <i class="fas fa-expand me-2"></i>View Detail
+                </button>
+              </div>
             </div>
         `;
         container.appendChild(card);
@@ -125,23 +117,147 @@ function renderProjects(projects) {
 }
 
 function showDetailModal(item) {
-    const detailModal = new bootstrap.Modal(document.getElementById('projectDetailModal'));
-    document.getElementById('detailModalTitle').textContent = item.title;
-    document.getElementById('detailModalImage').src = item.imageUrl;
-    document.getElementById('detailModalDescription').textContent = item.description;
-    document.getElementById('detailModalCategory').textContent = item.category;
-    document.getElementById('detailModalUploader').textContent = item.uploaderName;
-
-    const detailModalLink = document.getElementById('detailModalLink');
+    document.getElementById('detail-title').textContent = item.title;
+    document.getElementById('detail-image').src = item.imageUrl; // Use imageUrl from Cloudinary
+    document.getElementById('detail-year').textContent = item.year;
+    document.getElementById('detail-contributors').textContent = item.contributors.join(', ');
+    document.getElementById('detail-description').textContent = item.description;
+    // Hide link if not available
+    const detailLink = document.getElementById('detail-link');
     if (item.link) {
-        detailModalLink.href = item.link;
-        detailModalLink.textContent = 'View Original Project';
-        detailModalLink.style.display = 'inline-block';
+        detailLink.href = item.link;
+        detailLink.style.display = 'inline-block';
     } else {
-        detailModalLink.style.display = 'none'; // Hide if no link
+        detailLink.style.display = 'none';
     }
 
-    detailModal.show();
+    const keywordsContainer = document.getElementById('detail-keywords');
+    keywordsContainer.innerHTML = item.keywords.map(k =>
+        `<span class="badge badge-custom me-2 mb-2">${k}</span>`
+    ).join('') || 'N/A';
+
+    const modal = new bootstrap.Modal(document.getElementById('detail-modal'));
+    modal.show();
+}
+
+// --- Filtering and Other UI Event Handlers ---
+function setupEventListeners() {
+    const projectForm = document.getElementById('projectForm');
+      if (projectForm) {
+          projectForm.addEventListener('submit', handleProjectSubmit);
+      }
+
+    // AI chat elements
+    aiSearchInput = document.getElementById('ai-search');
+    aiResponseDiv = document.getElementById('ai-response');
+    // Category filtering
+    document.querySelectorAll('.category-filter button').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelector('.category-filter .active').classList.remove('active');
+            this.classList.add('active');
+
+            const category = this.dataset.category;
+            let filteredItems = [];
+
+            if (category === 'all') {
+                filteredItems = allApprovedProjects;
+            } else {
+                // Filter by category directly from the fetched projects
+                filteredItems = allApprovedProjects.filter(item => item.category === category);
+            }
+            renderItems(filteredItems);
+        });
+    });
+
+    // Load more button (simulated - can be expanded for pagination)
+    document.getElementById('load-more').addEventListener('click', function() {
+        // For now, it just indicates no more items.
+        // In a real application, you'd fetch more items from the backend with pagination.
+        this.textContent = 'No more items to load';
+        this.disabled = true;
+    });
+}
+
+// --- Project Submission (Upload) Logic ---
+function initUpload() {
+    const uploadBtn = document.getElementById('upload-btn');
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', handleUploadClick);
+    }
+
+    document.getElementById('project-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const form = e.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+
+        try {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i>Uploading...`;
+
+            const formData = new FormData(form);
+
+            // Ensure contributors and keywords are sent as JSON strings or correct array format
+            // Backend expects JSON.parse, so send as stringified JSON array
+            const contributorsArray = formData.get('contributors').split(',').map(c => c.trim()).filter(c => c);
+            formData.set('contributors', JSON.stringify(contributorsArray));
+
+            const keywordsValue = formData.get('keywords');
+            const keywordsArray = keywordsValue ? keywordsValue.split(',').map(k => k.trim()).filter(k => k) : [];
+            formData.set('keywords', JSON.stringify(keywordsArray));
+
+            // Remove empty link field if present, or backend might try to parse "" as URL
+            if (formData.get('link') === '') {
+                formData.delete('link');
+            }
+
+            const response = await fetch(`${BACKEND_API_BASE_URL}/api/projects`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                // Assuming backend sends { error: 'message' }
+                throw new Error(data.error || 'Unknown error occurred during upload.');
+            }
+
+            // Project submitted successfully, but it's *not yet approved*
+            // So we don't add it to allApprovedProjects or re-render immediately
+            form.reset();
+            const uploadModal = bootstrap.Modal.getInstance(document.getElementById('upload-modal'));
+            if (uploadModal) uploadModal.hide();
+
+            alert('Project submitted successfully! It is now awaiting administrator review.');
+            // No need to refresh projects, as the new project is not approved yet.
+            // If you want to show a "thank you" message on the main page, implement that separately.
+
+        } catch (err) {
+            console.error('Upload failed:', err);
+            alert(`Upload failed: ${err.message}`);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    });
+}
+
+function handleUploadClick() {
+    console.log('[DEBUG] Upload button clicked');
+    try {
+        const modal = new bootstrap.Modal(
+            document.getElementById('upload-modal'),
+            { keyboard: true }
+        );
+        modal.show();
+    } catch (err) {
+        console.error('Modal initialization failed:', err);
+        // Fallback for older Bootstrap versions or if modal script isn't loaded correctly
+        document.getElementById('upload-modal').classList.add('show');
+        document.getElementById('upload-modal').style.display = 'block';
+    }
 }
 
 // --- AI Chat Functions ---
@@ -242,40 +358,4 @@ function formatResponse(text) {
     text = text.replace(/\n/g, '<br>');
 
     return text;
-}
-
-
-// --- Utility Functions ---
-
-function setupEventListeners() {
-    // Project submission form
-    const projectForm = document.getElementById('projectForm');
-    if (projectForm) {
-        projectForm.addEventListener('submit', handleProjectSubmit);
-    }
-
-    // AI chat elements
-    aiSearchInput = document.getElementById('ai-search');
-    aiResponseDiv = document.getElementById('ai-response');
-}
-
-function initUpload() {
-    const imageInput = document.getElementById('image');
-    const imagePreview = document.getElementById('imagePreview');
-
-    if (imageInput && imagePreview) {
-        imageInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = 'block';
-                };
-                reader.readAsDataURL(this.files[0]);
-            } else {
-                imagePreview.src = '#';
-                imagePreview.style.display = 'none';
-            }
-        });
-    }
 }
