@@ -110,13 +110,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Middleware to check if user is an admin
-const admin = (req, res, next) => {
-    if (req.user && req.user.isAdmin) {
-        next();
-    } else {
-        res.status(403).json({ message: 'Not authorized as an admin' });
-    }
-};
+
 const authMiddleware = (req, res, next) => {
     const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
 
@@ -390,7 +384,7 @@ app.get('/api/projects', async (req, res) => {
 // @route   GET /api/admin/projects/pending
 // @desc    Get all pending projects for admin review
 // @access  Private (Admin)
-app.get('/api/admin/projects/pending', admin, async (req, res) => {
+app.get('/api/admin/projects/pending', authMiddleware, async (req, res) => {
     try {
         const pendingProjects = await Project.find({ isApproved: false }).sort({ submissionDate: 1 });
         res.json(pendingProjects);
@@ -403,7 +397,7 @@ app.get('/api/admin/projects/pending', admin, async (req, res) => {
 // @route   PUT /api/admin/projects/:id/approve
 // @desc    Approve a project
 // @access  Private (Admin)
-app.put('/api/admin/projects/:id/approve', admin, async (req, res) => {
+app.put('/api/admin/projects/:id/approve', authMiddleware, async (req, res) => {
     try {
         const project = await Project.findById(req.params.id);
         if (!project) {
@@ -447,7 +441,7 @@ app.put('/api/admin/projects/:id/approve', admin, async (req, res) => {
 // @route   DELETE /api/admin/projects/:id
 // @desc    Reject/Delete a project
 // @access  Private (Admin)
-app.delete('/api/admin/projects/:id', admin, async (req, res) => {
+app.delete('/api/admin/projects/:id', authMiddleware, async (req, res) => {
     try {
         const project = await Project.findById(req.params.id);
         if (!project) {
